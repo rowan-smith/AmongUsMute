@@ -21,7 +21,7 @@ class Info(commands.Cog):
                        f"Dead: {len(game.dead_players)},\n"
                        f"Spectating: {len(game.spectating_players)},\n"
                        f"Game Started: {game.started},\n"
-                       f"Status: {game.status}")
+                       f"Status: {game.running}")
 
     @info.error
     async def info_error(self, ctx, error):

@@ -16,18 +16,18 @@ class OnJoinListener(commands.Cog):
                 if game.is_channel(after.channel):
                     if game.is_playing(member):
                         if game.is_alive(member):
-                            if game.status:
+                            if game.running:
                                 await member.edit(deafen=True)
                             else:
                                 await member.edit(deafen=False, mute=False)
                         else:
-                            if game.status:
+                            if game.running:
                                 await member.edit(mute=False, deafen=False)
                             else:
                                 await member.edit(mute=True)
                     else:
                         if game.started:
-                            if game.status:
+                            if game.running:
                                 await member.edit(mute=False, deafen=False)
                             else:
                                 await member.edit(mute=True)

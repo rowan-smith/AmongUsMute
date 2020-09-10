@@ -26,7 +26,7 @@ class Spectator(commands.Cog):
                 raise AlreadySpectating()
             else:
                 game.add_spectator(player)
-                if game.status:
+                if game.running:
                     await player.edit(mute=False)
                 else:
                     await player.edit(mute=True)

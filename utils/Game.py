@@ -6,7 +6,7 @@ from discord import VoiceChannel, Member
 class Game:
     def __init__(self, channel: VoiceChannel) -> None:
         self.channel = channel
-        self.status = False
+        self.running = False
         self.started = False
 
         self.players: List[Member] = []
@@ -43,7 +43,7 @@ class Game:
                 return True
 
     def reset_game(self) -> None:
-        self.status = False
+        self.running = False
         self.started = False
 
         self.players.clear()

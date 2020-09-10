@@ -25,7 +25,7 @@ class Dead(commands.Cog):
         for player in members:
             if game.is_alive(player):
                 game.add_dead_player(player)
-                if game.status:
+                if game.running:
                     await player.edit(mute=False, deafen=False)
                 else:
                     await player.edit(mute=True)
