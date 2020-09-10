@@ -5,55 +5,33 @@ from discord.ext import commands
 from discord.ext.commands import CommandOnCooldown, BucketType, BotMissingPermissions
 
 from main import AmongUs
-from utils import is_playing, NoGamesExist, NotPlaying
-from utils.utils import get_game
+from utils import is_playing, NoGamesExist, NotPlaying, AlreadyPlaying, VoiceNotConnected
+from utils.utils import get_game, create_game, resume_game, pause_game
 
 
 class Emergency(commands.Cog):
     def __init__(self, bot):
         self.bot: AmongUs = bot
 
-    @commands.command(aliases=["unmute", "mute", "em", "report", "re", "start"])
+    @commands.command(aliases=["em", "emergency", "report", "re", "start"])
     @commands.bot_has_guild_permissions(mute_members=True, deafen_members=True)
     @commands.cooldown(1, 10, BucketType.channel)
     @is_playing()
-    async def emergency(self, ctx):
+    async def _emergency(self, ctx):
         """Command for when an emergency or report has happened."""
 
-        game = await get_game(self.bot.games, ctx)
-        game.started = True
+        try:
+            game = await get_game(self.bot.games, ctx)
+        except NotPlaying:
+            game = await create_game(self.bot.games, ctx)
+            await ctx.send(f"Created game with **{len(game.players)}** members")
 
-        if game.status:
-            for player in game.players:
-                await player.edit(deafen=True)
-
-            for player in game.dead_players:
-                await player.edit(mute=False)
-
-            for player in game.spectating_players:
-                await player.edit(mute=False)
-
-            await ctx.send(f"**{len(game.players)}** Living players have been deafened.\n"
-                           f"**{len(game.dead_players) + len(game.spectating_players)}"
-                           f"** Dead / Spectating players unmuted.")
-
-            game.status = not game.status
-
+        if game.running:
+            await pause_game(game, ctx)
         else:
-            for player in game.dead_players:
-                await player.edit(mute=True)
+            await resume_game(game, ctx)
 
-            for player in game.spectating_players:
-                await player.edit(mute=True)
-
-            for player in game.players:
-                await player.edit(deafen=False)
-
-            await ctx.send(f"**{len(game.players)}** players have been undeafened.\n"
-                           f"**{len(game.dead_players) + len(game.spectating_players)}"
-                           f"** Dead / Spectators players muted.")
-
-        game.status = not game.status
+        game.running = not game.running
 
         def check(m):
             return game.is_playing(m.author)
@@ -64,18 +42,15 @@ class Emergency(commands.Cog):
             await self.bot.games.remove(game)
             await ctx.send("Game has been idle for too long an ended.")
 
-    @emergency.error
+    @_emergency.error
     async def emergency_error(self, ctx, error):
-        if isinstance(error, CommandOnCooldown):
+        if isinstance(error, VoiceNotConnected):
             return await ctx.send(error)
 
-        if isinstance(error, NoGamesExist):
+        if isinstance(error, (NoGamesExist, NotPlaying, AlreadyPlaying)):
             return await ctx.send(error)
 
-        if isinstance(error, NotPlaying):
-            return await ctx.send(error)
-
-        if isinstance(error, BotMissingPermissions):
+        if isinstance(error, (BotMissingPermissions, CommandOnCooldown)):
             return await ctx.send(error)
 
         traceback.print_exc()
