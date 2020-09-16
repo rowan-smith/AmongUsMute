@@ -1,5 +1,3 @@
-import os
-
 from discord.ext import commands
 
 import secrets
@@ -16,18 +14,19 @@ class AmongUs(commands.Bot):
             case_insensitive=True
         )
 
-        self.games = {}
+        self.games = []
 
         # Working Cogs
-        self.load_extension("cogs.new_game_cog")
         self.load_extension("cogs.force_cog")
         self.load_extension("cogs.dead_cog")
-        self.load_extension("cogs.emergency_cog")
 
         # Unchecked
+        self.load_extension("cogs.emergency_cog")
+        self.load_extension("cogs.new_game_cog")
         self.load_extension("cogs.end_game_cog")
-        self.load_extension("cogs.reset_cog")
+        self.load_extension("cogs.reset_game_cog")
         self.load_extension("cogs.info_cog")
+        self.load_extension("cogs.spectator_cog")
 
         # Listeners
         self.load_extension("listeners.on_channel_join")

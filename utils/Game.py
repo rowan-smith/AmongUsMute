@@ -21,6 +21,10 @@ class Game:
         self.dead_players.append(member)
 
     def add_spectator(self, member: Member):
+        if self.is_alive(member):
+            self.players.remove(member)
+        if self.is_dead(member):
+            self.dead_players.remove(member)
         self.spectating_players.append(member)
 
     def is_playing(self, member: Member) -> bool:
@@ -40,6 +44,11 @@ class Game:
     def is_spectating(self, member: Member):
         for player in self.spectating_players:
             if player.id == member.id:
+                return True
+
+    def is_dead(self, member: Member):
+        for player in self.dead_players:
+            if member.id == player.id:
                 return True
 
     def reset_game(self) -> None:

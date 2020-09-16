@@ -5,8 +5,8 @@ from discord.ext import commands
 from discord.ext.commands import CommandOnCooldown, BucketType, BotMissingPermissions
 
 from main import AmongUs
-from utils import is_playing, NoGamesExist, NotPlaying, AlreadyPlaying, VoiceNotConnected
-from utils.utils import get_game, create_game, resume_game, pause_game
+from utils import is_playing, NotPlaying, AlreadyPlaying, VoiceNotConnected, is_in_voice
+from utils.utils import get_game, resume_game, pause_game
 
 
 class Emergency(commands.Cog):
@@ -16,22 +16,20 @@ class Emergency(commands.Cog):
     @commands.command(aliases=["em", "emergency", "report", "re", "start"])
     @commands.bot_has_guild_permissions(mute_members=True, deafen_members=True)
     @commands.cooldown(1, 10, BucketType.channel)
+    @is_in_voice()
     @is_playing()
     async def _emergency(self, ctx):
         """Command for when an emergency or report has happened."""
+        game = await get_game(self.bot.games, ctx)
 
-        try:
-            game = await get_game(self.bot.games, ctx)
-        except NotPlaying:
-            game = await create_game(self.bot.games, ctx)
-            await ctx.send(f"Created game with **{len(game.players)}** members")
+        if not game.started:
+            game.started = True
+        game.running = not game.running
 
         if game.running:
             await pause_game(game, ctx)
         else:
             await resume_game(game, ctx)
-
-        game.running = not game.running
 
         def check(m):
             return game.is_playing(m.author)
@@ -47,7 +45,7 @@ class Emergency(commands.Cog):
         if isinstance(error, VoiceNotConnected):
             return await ctx.send(error)
 
-        if isinstance(error, (NoGamesExist, NotPlaying, AlreadyPlaying)):
+        if isinstance(error, (NotPlaying, AlreadyPlaying)):
             return await ctx.send(error)
 
         if isinstance(error, (BotMissingPermissions, CommandOnCooldown)):

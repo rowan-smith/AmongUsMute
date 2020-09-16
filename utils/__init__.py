@@ -11,3 +11,4 @@ from utils.Game import Game
 from utils.checks import is_playing
 from utils.checks import is_in_voice
 from utils.checks import is_not_playing
+from utils.checks import is_not_spectator

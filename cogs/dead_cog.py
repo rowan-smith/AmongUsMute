@@ -14,7 +14,6 @@ class Dead(commands.Cog):
         self.bot: AmongUs = bot
 
     @commands.command()
-    @commands.bot_has_guild_permissions(mute_members=True, deafen_members=True)
     @is_playing()
     async def dead(self, ctx, members: Greedy[Member] = None):
 
@@ -30,7 +29,7 @@ class Dead(commands.Cog):
                 else:
                     await player.edit(mute=True)
 
-        await ctx.send(f"{len(members)} died!")
+        await ctx.send(f"**{len(members)}** player(s) died!")
 
     @dead.error
     async def dead_error(self, ctx, error):
@@ -38,9 +37,6 @@ class Dead(commands.Cog):
             return await ctx.send(error)
 
         if isinstance(error, NotPlaying):
-            return await ctx.send(error)
-
-        if isinstance(error, BotMissingPermissions):
             return await ctx.send(error)
 
         traceback.print_exc()

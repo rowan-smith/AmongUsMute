@@ -60,7 +60,8 @@ class Force(commands.Cog):
     @is_playing()
     async def force_end_game(self, ctx):
         game = await get_game(self.bot.games, ctx)
-        await end_game(self.bot.games, game)
+        await end_game(game)
+        self.bot.games.remove(game)
 
         await ctx.send("Game has ended.")
 

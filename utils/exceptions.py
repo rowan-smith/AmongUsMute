@@ -1,9 +1,13 @@
+from discord import VoiceChannel
 from discord.ext.commands import CommandError
 
 
 class AlreadyPlaying(CommandError):
-    def __init__(self):
-        super().__init__("You are already playing a game!")
+    def __init__(self, channel: VoiceChannel = None):
+        if channel is None:
+            super().__init__("You are already playing a game!")
+        else:
+            super().__init__(f"You are already playing a game in **{channel.name}**!")
 
 
 class VoiceNotConnected(CommandError):

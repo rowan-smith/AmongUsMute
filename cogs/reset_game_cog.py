@@ -2,8 +2,8 @@ from discord import VoiceState
 from discord.ext import commands
 
 from main import AmongUs
-from utils import is_playing, is_in_voice
-from utils.utils import get_game
+from utils import is_playing
+from utils.utils import get_game, end_game
 
 
 class ResetGame(commands.Cog):
@@ -12,24 +12,18 @@ class ResetGame(commands.Cog):
 
     @commands.command(name="resetgame")
     @is_playing()
-    @is_in_voice()
     async def reset_game(self, ctx):
         game = await get_game(self.bot.games, ctx)
-
-        for player in game.players:
-            await player.edit(mute=False, deafen=False)
-        for player in game.dead_players:
-            await player.edit(mute=False, deafen=False)
-        for player in game.spectating_players:
-            await player.edit(mute=False, deafen=False)
+        await end_game(game)
 
         game.reset_game()
+        game.running = False
 
         voice: VoiceState = ctx.author.voice
         for member in voice.channel.members:
             game.add_player(member)
 
-        await ctx.send("Game reset!")
+        await ctx.send(f"Game reset for channel **{voice.channel.name}**!")
 
 
 def setup(bot):

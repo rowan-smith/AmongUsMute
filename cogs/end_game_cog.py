@@ -1,9 +1,10 @@
+import traceback
+
 from discord.ext import commands
-from discord.ext.commands import CommandInvokeError
 
 from main import AmongUs
-from utils import is_playing
-from utils.utils import get_game
+from utils import is_playing, is_in_voice, NotPlaying, NoGamesExist
+from utils.utils import get_game, end_game
 
 
 class EndGame(commands.Cog):
@@ -13,27 +14,17 @@ class EndGame(commands.Cog):
     @commands.command(name="endgame")
     @is_playing()
     async def end_game(self, ctx):
-
         game = await get_game(self.bot.games, ctx)
-
-        if not len(game.players) <= 3:
-            return await ctx.send("Cannot end game with more than 3 players.")
-
-        for player in game.players:
-            await player.edit(mute=False, deafen=False)
-        for player in game.dead_players:
-            await player.edit(mute=False, deafen=False)
-        for player in game.spectating_players:
-            await player.edit(mute=False, deafen=False)
-
+        await end_game(game)
         self.bot.games.remove(game)
-
-        await ctx.send("Game has ended.")
+        await ctx.send(f"The game has ended in channel **{game.channel.name}**")
 
     @end_game.error
     async def end_game_error(self, ctx, error):
-        if isinstance(error, CommandInvokeError):
-            return
+        if isinstance(error, (NotPlaying, NoGamesExist)):
+            return ctx.send(error)
+
+        traceback.print_exc()
             
 
 def setup(bot):

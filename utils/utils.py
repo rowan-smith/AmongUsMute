@@ -5,7 +5,7 @@ from utils import Game, NotPlaying, NoGamesExist
 
 async def get_game(games, ctx) -> Game:
     for game in games:
-        if game.is_channel(ctx.author.voice.channel.id):
+        if game.is_channel(ctx.author.voice.channel):
             return game
         raise NotPlaying()
     raise NoGamesExist()
@@ -19,9 +19,6 @@ async def create_game(games, ctx) -> Game:
     for member in voice.channel.members:
         await member.edit(mute=False, deafen=False)
         game.add_player(member)
-
-    # set game as started
-    game.started = True
 
     games.append(game)
     return game
@@ -58,12 +55,19 @@ async def resume_game(game, ctx) -> None:
                    f"** Dead / Spectators players muted.")
 
 
-async def end_game(games, game):
+async def end_game(game) -> None:
     for player in game.players:
-        await player.edit(mute=False, deafen=False)
+        try:
+            await player.edit(mute=False, deafen=False)
+        except Exception:
+            pass
     for player in game.dead_players:
-        await player.edit(mute=False, deafen=False)
+        try:
+            await player.edit(mute=False, deafen=False)
+        except Exception:
+            pass
     for player in game.spectating_players:
-        await player.edit(mute=False, deafen=False)
-
-    games.remove(game)
+        try:
+            await player.edit(mute=False, deafen=False)
+        except Exception:
+            pass
