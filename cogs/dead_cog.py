@@ -2,7 +2,7 @@ import traceback
 
 from discord import Member
 from discord.ext import commands
-from discord.ext.commands import Greedy, BotMissingPermissions
+from discord.ext.commands import Greedy
 
 from main import AmongUs
 from utils import is_playing, NoGamesExist, NotPlaying

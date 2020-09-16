@@ -3,7 +3,7 @@ import traceback
 from discord.ext import commands
 
 from main import AmongUs
-from utils import is_playing, is_in_voice, NotPlaying, NoGamesExist
+from utils import is_playing, NotPlaying, NoGamesExist
 from utils.utils import get_game, end_game
 
 
@@ -22,7 +22,7 @@ class EndGame(commands.Cog):
     @end_game.error
     async def end_game_error(self, ctx, error):
         if isinstance(error, (NotPlaying, NoGamesExist)):
-            return ctx.send(error)
+            return await ctx.send(error)
 
         traceback.print_exc()
             
