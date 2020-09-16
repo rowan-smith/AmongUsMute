@@ -27,6 +27,7 @@ class AmongUs(commands.Bot):
         self.load_extension("cogs.reset_game_cog")
         self.load_extension("cogs.info_cog")
         self.load_extension("cogs.spectator_cog")
+        self.load_extension("cogs.remove_cog")
 
         # Listeners
         self.load_extension("listeners.on_channel_join")
