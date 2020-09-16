@@ -25,14 +25,23 @@ async def create_game(games, ctx) -> Game:
 
 
 async def pause_game(game: Game, ctx) -> None:
-    for player in game.players:
-        await player.edit(deafen=True)
+    try:
+        for player in game.players:
+            await player.edit(deafen=True)
+    except Exception:
+        pass
 
-    for player in game.dead_players:
-        await player.edit(mute=False)
+    try:
+        for player in game.dead_players:
+            await player.edit(mute=False)
+    except Exception:
+        pass
 
-    for player in game.spectating_players:
-        await player.edit(mute=False)
+    try:
+        for player in game.spectating_players:
+            await player.edit(mute=False)
+    except Exception:
+        pass
 
     await ctx.send(f"**{len(game.players)}** Living players have been deafened.\n"
                    f"**{len(game.dead_players) + len(game.spectating_players)}"
@@ -41,14 +50,23 @@ async def pause_game(game: Game, ctx) -> None:
 
 async def resume_game(game, ctx) -> None:
     # dead and spectating players are muted
-    for player in game.dead_players:
-        await player.edit(mute=True)
+    try:
+        for player in game.dead_players:
+            await player.edit(mute=True)
+    except Exception:
+        pass
 
-    for player in game.spectating_players:
-        await player.edit(mute=True)
+    try:
+        for player in game.spectating_players:
+            await player.edit(mute=True)
+    except Exception:
+        pass
 
-    for player in game.players:
-        await player.edit(deafen=False)
+    try:
+        for player in game.players:
+            await player.edit(deafen=False)
+    except Exception:
+        pass
 
     await ctx.send(f"**{len(game.players)}** players have been undeafened.\n"
                    f"**{len(game.dead_players) + len(game.spectating_players)}"
