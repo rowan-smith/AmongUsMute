@@ -11,7 +11,7 @@ class EndGame(commands.Cog):
     def __init__(self, bot):
         self.bot: AmongUs = bot
 
-    @commands.command(name="endgame")
+    @commands.command(name="endgame", aliases=["end"])
     @is_playing()
     async def end_game(self, ctx):
         game = await get_game(self.bot.games, ctx)

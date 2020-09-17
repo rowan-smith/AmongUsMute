@@ -56,7 +56,7 @@ class Force(commands.Cog):
 
         await ctx.send(f"**{len(voice.channel.members)}** Members in channel **{voice.channel.name}** undeafened.")
 
-    @commands.command(name="fendgame")
+    @commands.command(name="fendgame", aliases=["fend"])
     @is_playing()
     async def force_end_game(self, ctx):
         game = await get_game(self.bot.games, ctx)

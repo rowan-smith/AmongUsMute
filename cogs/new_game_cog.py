@@ -11,7 +11,7 @@ class EndGame(commands.Cog):
     def __init__(self, bot):
         self.bot: AmongUs = bot
 
-    @commands.command(name="newgame")
+    @commands.command(name="newgame", aliases=["new"])
     @is_in_voice()
     @is_not_playing()
     async def new_game(self, ctx):

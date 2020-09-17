@@ -13,7 +13,7 @@ class Emergency(commands.Cog):
     def __init__(self, bot):
         self.bot: AmongUs = bot
 
-    @commands.command(aliases=["em", "emergency", "report", "re", "start"])
+    @commands.command(name="emergency", aliases=["em", "report", "re", "start", "stop"])
     @commands.bot_has_guild_permissions(mute_members=True, deafen_members=True)
     @commands.cooldown(1, 10, BucketType.channel)
     @is_in_voice()

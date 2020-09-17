@@ -10,7 +10,7 @@ class ResetGame(commands.Cog):
     def __init__(self, bot):
         self.bot: AmongUs = bot
 
-    @commands.command(name="resetgame")
+    @commands.command(name="resetgame", aliases=["reset"])
     @is_playing()
     async def reset_game(self, ctx):
         game = await get_game(self.bot.games, ctx)
