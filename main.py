@@ -16,22 +16,6 @@ class AmongUs(commands.Bot):
 
         self.games = []
 
-        # Working Cogs
-        self.load_extension("cogs.force_cog")
-        self.load_extension("cogs.dead_cog")
-
-        # Unchecked
-        self.load_extension("cogs.emergency_cog")
-        self.load_extension("cogs.new_game_cog")
-        self.load_extension("cogs.end_game_cog")
-        self.load_extension("cogs.reset_game_cog")
-        self.load_extension("cogs.info_cog")
-        self.load_extension("cogs.spectator_cog")
-        self.load_extension("cogs.remove_cog")
-
-        # Listeners
-        self.load_extension("listeners.on_channel_join")
-
     def run(self):
         try:
             super().run(secrets.TOKEN, reconnect=True)
