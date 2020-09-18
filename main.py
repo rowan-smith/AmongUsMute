@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 import secrets
+from utils.GameHandler import GameHandler
 
 
 async def get_prefix_(bot, message):
@@ -14,7 +15,7 @@ class AmongUs(commands.Bot):
             case_insensitive=True
         )
 
-        self.games = []
+        self.game_handler: GameHandler = GameHandler()
 
     def run(self):
         try:
