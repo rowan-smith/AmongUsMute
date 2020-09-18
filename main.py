@@ -4,7 +4,7 @@ import secrets
 
 
 async def get_prefix_(bot, message):
-    return commands.when_mentioned_or("--")(bot, message)
+    return commands.when_mentioned_or(["--", "—"])(bot, message)
 
 
 class AmongUs(commands.Bot):
