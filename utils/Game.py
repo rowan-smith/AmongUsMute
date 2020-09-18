@@ -52,6 +52,30 @@ class Game:
         else:
             return self.is_alive(member) or self.is_dead(member)
 
+    def is_voice_channel(self, voice_channel: VoiceChannel) -> bool:
+        """Check if a VoiceChannel is the same as the Game
+
+        :param voice_channel: VoiceChannel that is being checked
+        :return: True if the VoiceChannel is the same, otherwise False
+        """
+        return self.voice_channel.id == voice_channel.id
+
+    def is_text_channel(self, text_channel: TextChannel) -> bool:
+        """Check if a TextChannel is the same as the Game
+
+        :param text_channel: TextChannel that is being checked
+        :return: True if the TextChannel is the same, otherwise, False
+        """
+        return self.text_channel.id == text_channel.id
+
+    def is_leader(self, member: Member) -> bool:
+        """Checks if Member is a leader of the Game
+
+        :param member: Member that is being checked
+        :return: True if Member is the leader, otherwise False
+        """
+        return self.leader.id == member.id
+
     def kill_player(self, member: Member) -> bool:
         """Kills a player moving them from alive to dead
 
