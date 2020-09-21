@@ -135,7 +135,7 @@ class Game:
             return True
         return False
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the game back to default"""
         self._alive: List[Member] = []
         self._dead: List[Member] = []
@@ -143,3 +143,31 @@ class Game:
 
         self.started = False
         self.emergency = False
+
+    def get_player_count(self) -> int:
+        """Returns the total player count in game
+
+        :return: Number of spectators, dead and alive
+        """
+        return len(self._alive) + len(self._dead) + len(self._spectating)
+
+    def get_alive(self) -> List[Member]:
+        """Gets all alive players
+
+        :return: Alive players
+        """
+        return self._alive
+
+    def get_dead(self) -> List[Member]:
+        """Gets all dead players
+
+        :return: Dead players
+        """
+        return self._dead
+
+    def get_spectating(self) -> List[Member]:
+        """Gets all spectating players
+
+        :return: Spectating players
+        """
+        return self._spectating
