@@ -39,7 +39,23 @@ class GameHandler:
                 if game.is_playing(identifier):
                     return game
 
-    def end_game(self, ctx: Context) -> bool:  ...
+    def end_game(self, ctx: Context) -> bool:
+        """# Get Game
+        # Unmute, Undeafen: players, dead players and spectators
+        """
+        game = self.get_game(ctx.author)
+
+        for alive in game.get_alive():
+            await alive.edit(mute=False, deafen=False)
+
+        for dead in game.get_dead():
+            await dead.edit(mute=False, deafen=False)
+
+        for spectator in game.get_spectating():
+            await spectator.edit(mute=False, deafen=False)
+
+        game.reset()
+        return True
 
     def reset_game(self, ctx: Context) -> bool: ...
 
