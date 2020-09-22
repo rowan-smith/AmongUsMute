@@ -1,7 +1,6 @@
 from discord.ext import commands
 
 import secrets
-from utils.GameHandler import GameHandler
 
 
 async def get_prefix_(bot, message):
@@ -14,18 +13,6 @@ class AmongUs(commands.Bot):
             command_prefix=get_prefix_,
             case_insensitive=True
         )
-
-        self.game_handler: GameHandler = GameHandler()
-
-        cog_list = [
-            "extensions.cogs.new_game",
-        ]
-
-        for cog in cog_list:
-            try:
-                self.load_extension(cog)
-            except ...:
-                pass
 
     def run(self):
         try:
