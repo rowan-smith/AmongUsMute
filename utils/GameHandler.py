@@ -40,8 +40,22 @@ class GameHandler:
                     return game
 
     def end_game(self, ctx: Context) -> bool:
-        """# Get Game
-        # Unmute, Undeafen: players, dead players and spectators
+        """Ends the Game for the VoiceChannel
+
+        :param ctx: discord Context
+        :return: True if the Game has ended, otherwise False
+        """
+        game = self.get_game(ctx.author)
+        self.reset_game(ctx)
+
+        self._games.remove(game)
+        return True
+
+    def reset_game(self, ctx: Context) -> bool:
+        """Resets the game to default settings
+
+        :param ctx: discord Context
+        :return: True if the Game has been reset successfully, otherwise False
         """
         game = self.get_game(ctx.author)
 
@@ -57,8 +71,38 @@ class GameHandler:
         game.reset()
         return True
 
-    def reset_game(self, ctx: Context) -> bool: ...
+    def pause_game(self, ctx: Context) -> bool:
+        """Pauses the game
 
-    def pause_game(self, ctx: Context) -> bool: ...
+        :param ctx: discord Context
+        :return: True if the Game has been paused successfully, otherwise False
+        """
+        game = self.get_game(ctx.author)
+        for alive in game.get_alive():
+            await alive.edit(mute=False, deafen=False)
 
-    def resume_game(self, ctx: Context) -> bool: ...
+        for dead in game.get_dead():
+            await dead.edit(mute=True, deafen=False)
+
+        for spectator in game.get_spectating():
+            await spectator.edit(mute=True, deafen=False)
+
+        return True
+
+    def resume_game(self, ctx: Context) -> bool:
+        """Resumes the game
+
+        :param ctx: discord Context
+        :return: True if the Game has been resumed successfully, otherwise False
+        """
+        game = self.get_game(ctx.author)
+        for alive in game.get_alive():
+            await alive.edit(mute=False, deafen=True)
+
+        for dead in game.get_dead():
+            await dead.edit(mute=False, deafen=False)
+
+        for spectator in game.get_spectating():
+            await spectator.edit(mute=False, deafen=False)
+
+        return True
