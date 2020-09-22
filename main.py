@@ -5,7 +5,7 @@ from utils.GameHandler import GameHandler
 
 
 async def get_prefix_(bot, message):
-    return commands.when_mentioned_or(["--", "—"])(bot, message)
+    return commands.when_mentioned_or(*["--", "—"])(bot, message)
 
 
 class AmongUs(commands.Bot):
@@ -16,6 +16,16 @@ class AmongUs(commands.Bot):
         )
 
         self.game_handler: GameHandler = GameHandler()
+
+        cog_list = [
+            "extensions.cogs.new_game",
+        ]
+
+        for cog in cog_list:
+            try:
+                self.load_extension(cog)
+            except ...:
+                pass
 
     def run(self):
         try:
