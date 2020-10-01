@@ -14,6 +14,8 @@ class AmongUs(commands.Bot):
             case_insensitive=True
         )
 
+        self.load_extension("cogs.react")
+
     def run(self):
         try:
             super().run(secrets.TOKEN, reconnect=True)
