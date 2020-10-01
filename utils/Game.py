@@ -2,6 +2,8 @@ from typing import List
 
 from discord import VoiceChannel, TextChannel, Member
 
+from utils.GameState import GameState
+
 
 class Game:
     def __init__(self, voice: VoiceChannel, text: TextChannel, leader: Member):
@@ -13,8 +15,15 @@ class Game:
         self._dead: List[Member] = []
         self._spectating: List[Member] = []
 
-        self.started = False
-        self.emergency = False
+        self.state: GameState = GameState.LOBBY
+
+    def set_game_state(self, state: GameState) -> None:
+        """Sets the current GameState for the Game
+
+        :param state: GameState that the game should be
+        :return: None
+        """
+        self.state = state
 
     async def is_alive(self, member: Member) -> bool:
         """Returns if a player is alive in game
@@ -152,8 +161,7 @@ class Game:
         self._dead: List[Member] = []
         self._spectating: List[Member] = []
 
-        self.started = False
-        self.emergency = False
+        self.state = GameState.LOBBY
 
     async def get_player_count(self) -> int:
         """Returns the total player count in game
