@@ -1,19 +1,21 @@
 from typing import List
 
-from discord import VoiceChannel, TextChannel, Member
+from discord import VoiceChannel, TextChannel, Member, Embed, Message
 
-from utils.GameState import GameState
+from main import AmongUs
+from utils.enum.GameState import GameState
+from utils.Player import Player
+from utils.enum.PlayerState import PlayerState
 
 
 class Game:
-    def __init__(self, voice: VoiceChannel, text: TextChannel, leader: Member):
+    def __init__(self, voice: VoiceChannel, text: TextChannel, leader: Member, message: Message):
         self.voice_channel: VoiceChannel = voice
         self.text_channel: TextChannel = text
         self.leader: Member = leader
+        self.message: Message = message
 
-        self._alive: List[Member] = []
-        self._dead: List[Member] = []
-        self._spectating: List[Member] = []
+        self.players: List[Player] = []
 
         self.state: GameState = GameState.LOBBY
 
@@ -25,41 +27,60 @@ class Game:
         """
         self.state = state
 
-    async def is_alive(self, member: Member) -> bool:
+    def get_player(self, player: Player) -> Player:
+        """Returns player playing the Game
+
+        :param player: The player who you are getting
+        :return: Player
+        """
+        for i in self.players:
+            if player.id == i.id:
+                return player
+
+    async def is_alive(self, player: Player) -> bool:
         """Returns if a player is alive in game
 
-        :param member: the Member we are checking is alive
+        :param player: the Member we are checking is alive
         :return: True if player is alive, otherwise False
         """
-        return member in self._alive
+        for i in self.players:
+            if player.id == i.id:
+                return player.state == PlayerState.ALIVE
+        return False
 
-    async def is_dead(self, member: Member) -> bool:
+    async def is_dead(self, player: Player) -> bool:
         """Returns if a player is dead in game
 
-        :param member: the Member we are checking is dead
+        :param player: the Member we are checking is dead
         :return: True if the player is dead, otherwise False
         """
-        return member in self._dead
+        for i in self.players:
+            if player.id == i.id:
+                return player.state == PlayerState.DEAD
+        return False
 
-    async def is_spectating(self, member: Member) -> bool:
+    async def is_spectating(self, player: Player) -> bool:
         """Returns if a player is spectating the game
 
-        :param member: the Member we are checking is spectating
+        :param player: the Member we are checking is spectating
         :return: True if the player is spectating, otherwise False
         """
-        return member in self._spectating
+        for i in self.players:
+            if player.id == i.id:
+                return player.state == PlayerState.SPECTATING
+        return False
 
-    async def is_playing(self, member: Member, include_spectators=True) -> bool:
+    async def is_playing(self, player: Player, include_spectators=True) -> bool:
         """Returns if a member is playing
 
-        :param member: the Member we are checking is playing
+        :param player: the Member we are checking is playing
         :param include_spectators: should spectators be included?
         :return: True if the player is playing, otherwise False
         """
         if include_spectators:
-            return await self.is_alive(member) or self.is_dead(member) or self.is_spectating(member)
+            return await self.is_alive(player) or await self.is_dead(player) or await self.is_spectating(player)
         else:
-            return await self.is_alive(member) or self.is_dead(member)
+            return await self.is_alive(player) or await self.is_dead(player)
 
     async def is_voice_channel(self, voice_channel: VoiceChannel) -> bool:
         """Check if a VoiceChannel is the same as the Game
@@ -77,90 +98,76 @@ class Game:
         """
         return self.text_channel.id == text_channel.id
 
-    async def is_leader(self, member: Member) -> bool:
+    async def is_leader(self, player: Player) -> bool:
         """Checks if Member is a leader of the Game
 
-        :param member: Member that is being checked
+        :param player: Member that is being checked
         :return: True if Member is the leader, otherwise False
         """
-        return self.leader.id == member.id
+        return self.leader.id == player.id
 
-    async def new_player(self, member: Member) -> bool:
+    async def new_player(self, player: Player) -> bool:
         """Adds a player to the game
 
-        :param member: the Member who is being added
+        :param player: the Member who is being added
         :return: True if the player was added to the Game, otherwise False
         """
-        if not self._alive:
-            self._alive.append(member)
+        if not await self.is_playing(player):
+            self.players.append(player)
             return True
         return False
 
-    async def kill_player(self, member: Member) -> bool:
+    async def kill_player(self, player: Player) -> bool:
         """Kills a player moving them from alive to dead
 
-        :param member: the Member who is dead
+        :param player: the Member who is dead
         :return: True if member is now dead, otherwise False
         """
-        if self.is_alive(member):
-            self._alive.remove(member)
-            self._dead.append(member)
+        if await self.is_alive(player):
+            player: Player = self.get_player(player)
+            player.state = PlayerState.DEAD
             return True
         return False
 
-    async def revive_player(self, member: Member) -> bool:
+    async def revive_player(self, player: Player) -> bool:
         """Revives a player moving them from dead to alive
 
-        :param member: the Member who is being revived
+        :param player: the Member who is being revived
         :return: True if the Member was revived, otherwise False
         """
-        if self.is_dead(member):
-            self._dead.remove(member)
-            self._alive.append(member)
+        if await self.is_dead(player):
+            player: Player = self.get_player(player)
+            player.state = PlayerState.ALIVE
             return True
         return False
 
-    async def spectate_player(self, member: Member) -> bool:
+    async def spectate_player(self, player: Player) -> bool:
         """Adds player as spectator
 
-        :param member: the Member who is becoming a spectator
+        :param player: the Member who is becoming a spectator
         :return: True if the Member is now spectating, otherwise False
         """
-        if self.is_spectating(member):
-            return False
+        if await self.is_spectating(player):
+            player: Player = self.get_player(player)
+            player.state = PlayerState.SPECTATING
+            return True
+        return False
 
-        if self.is_alive(member):
-            self._alive.remove(member)
-
-        if self.is_dead(member):
-            self._dead.remove(member)
-
-        self._spectating.append(member)
-        return True
-
-    async def remove_player(self, member: Member) -> bool:
+    async def remove_player(self, player: Player) -> bool:
         """Remove a player from the game completely
 
-        :param member: the Member who should be removed
+        :param player: the Member who should be removed
         :return: True if member was removed, otherwise False
         """
-        if self.is_alive(member):
-            self._alive.remove(member)
-            return True
-        if self.is_dead(member):
-            self._dead.remove(member)
-            return True
-        if self.is_spectating(member):
-            self._spectating.remove(member)
+        if await self.is_playing(player):
+            player: Player = self.get_player(player)
+            self.players.remove(player)
             return True
         return False
 
     async def reset(self) -> None:
         """Reset the game back to default"""
-        self._alive: List[Member] = []
-        self._dead: List[Member] = []
-        self._spectating: List[Member] = []
-
+        self.players = []
         self.state = GameState.LOBBY
 
     async def get_player_count(self) -> int:
@@ -168,25 +175,56 @@ class Game:
 
         :return: Number of spectators, dead and alive
         """
-        return len(self._alive) + len(self._dead) + len(self._spectating)
+        return len(self.players)
 
-    async def get_alive(self) -> List[Member]:
+    async def get_alive(self) -> List[Player]:
         """Gets all alive players
 
         :return: Alive players
         """
-        return self._alive
+        return [i for i in self.players if i.state is PlayerState.ALIVE]
 
-    async def get_dead(self) -> List[Member]:
+    async def get_dead(self) -> List[Player]:
         """Gets all dead players
 
         :return: Dead players
         """
-        return self._dead
+        return [i for i in self.players if i.state is PlayerState.DEAD]
 
-    async def get_spectating(self) -> List[Member]:
+    async def get_spectating(self) -> List[Player]:
         """Gets all spectating players
 
         :return: Spectating players
         """
-        return self._spectating
+        return [i for i in self.players if i.state is PlayerState.SPECTATING]
+
+    async def update_message(self):
+        embed = Embed()
+
+        if await self.get_player_count() > 10:
+            embed.add_field(name="WARNING",
+                            value="You have more than 11 players in the discord voice channel.\n"
+                                  "This will cause a 3-8 second delay when muting / deafening.",
+                            inline=False)
+
+        embed.add_field(name="Game Stats",
+                        value=f"** **\n"
+                              f"**Leader:** {self.leader.mention}\n"
+                              f"**Voice Channel:** {self.voice_channel.name}\n"
+                              f"\n"
+                              f"**Game Phase:** {self.state.__str__()}\n"
+                              f"\n"
+                              f"**Players Stats:**\n"
+                              f"Alive: **{len(await self.get_alive())}**\n"
+                              f"Dead: **{len(await self.get_dead())}**\n"
+                              f"Spectating: **{len(await self.get_spectating())}**\n",
+                        inline=False)
+
+        # Strikeout dead
+        embed.add_field(name="Players", value="\n".join(f"{i.display_name}" for i in self.players))
+        embed.add_field(name="Player State", value="\n".join(f"{i.state.__str__()}" for i in self.players))
+
+        await self.message.edit(embed=embed)
+
+        # emoji = bot.get_emoji(760412009912467456)
+        # await self.message.add_reaction(emoji)

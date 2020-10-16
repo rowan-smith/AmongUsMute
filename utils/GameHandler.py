@@ -1,26 +1,40 @@
 from typing import Union, List
 
-from discord import VoiceChannel, Member, TextChannel
+from discord import VoiceChannel, Member, TextChannel, Message
 from discord.ext.commands import Context
 
 from utils.Game import Game
+from utils.Player import Player
+
+
+async def add_members_from_voice(game: Game):
+    """Adds members from voice channel
+
+    :param game: The Game to add members too
+    :return: ...
+    """
+    for member in game.voice_channel.members:
+        player = Player(member)
+        await game.new_player(player)
 
 
 class GameHandler:
     def __init__(self):
         self._games: List[Game] = []
 
-    async def create_game(self, ctx: Context) -> Game:
+    async def create_game(self, ctx: Context, message: Message) -> Game:
         """Create and add Game to handler
 
         :param ctx: the Context which has passed
+        :param message: The Message that will be used in the game
         :return: new Game that was created
         """
-        game = Game(ctx.author.voice.channel, ctx.channel, ctx.author)
+        game = Game(ctx.author.voice.channel, ctx.channel, ctx.author, message)
         self._games.append(game)
+        await add_members_from_voice(game)
         return game
 
-    async def get_game(self, identifier: Union[VoiceChannel, TextChannel, Member]) -> Game:
+    async def get_game(self, identifier: Union[VoiceChannel, TextChannel, Player]) -> Game:
         """Returns the Game the identifier is apart of
 
         :param identifier: the Game identifying argument
@@ -28,15 +42,15 @@ class GameHandler:
         """
         if isinstance(identifier, TextChannel):
             for game in self._games:
-                if game.is_text_channel(identifier):
+                if await game.is_text_channel(identifier):
                     return game
         if isinstance(identifier, VoiceChannel):
             for game in self._games:
-                if game.is_voice_channel(identifier):
+                if await game.is_voice_channel(identifier):
                     return game
-        if isinstance(identifier, Member):
+        if isinstance(identifier, Player):
             for game in self._games:
-                if game.is_playing(identifier):
+                if await game.is_playing(identifier):
                     return game
 
     async def end_game(self, ctx: Context) -> bool:

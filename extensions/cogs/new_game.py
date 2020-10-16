@@ -1,5 +1,6 @@
 import traceback
 
+from discord import Message, Embed
 from discord.ext import commands
 
 from main import AmongUs
@@ -11,13 +12,10 @@ class NewGame(commands.Cog):
 
     @commands.command(name="new")
     async def _new_game(self, ctx):
-        game = await self.bot.game_handler.create_game(ctx)
-
-        for member in game.voice_channel.members:
-            await game.new_player(member)
-
-        if game:
-            await ctx.send(f"Created game with **{await game.get_player_count()}** members in **{game.voice_channel.name}**")
+        embed = Embed(description="Creating Game... Please Wait.")
+        message: Message = await ctx.send(embed=embed)
+        game = await self.bot.game_handler.create_game(ctx, message)
+        await game.update_message(self.bot)
 
     @_new_game.error
     async def _new_game_error(self, ctx, error):
