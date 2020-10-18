@@ -22,17 +22,27 @@ class Spectator(commands.Cog):
 
         game = await get_game(self.bot.games, ctx)
 
-        for player in members:
-            if game.is_spectating(player) or game.is_dead(player):
+        if members:
+            for player in members:
+                if game.is_spectating(player) or game.is_dead(player):
+                    raise AlreadySpectating()
+                else:
+                    game.add_spectator(player)
+                    if game.running:
+                        await player.edit(mute=False, deafen=False)
+                    else:
+                        await player.edit(mute=True, deafen=False)
+            await ctx.send(f"**{len(members)}** members added as spectator!!")
+        else:
+            if game.is_spectating(ctx.author) or game.is_dead(ctx.author):
                 raise AlreadySpectating()
             else:
-                game.add_spectator(player)
+                game.add_spectator(ctx.author)
                 if game.running:
-                    await player.edit(mute=False, deafen=False)
+                    await ctx.author.edit(mute=False, deafen=False)
                 else:
-                    await player.edit(mute=True, deafen=False)
-
-        await ctx.send(f"**{len(members)}** members added as spectator!!")
+                    await ctx.author.edit(mute=True, deafen=False)
+            await ctx.send(f"**{len([ctx.author])}** members added as spectator!!")
 
     @spectator.error
     async def dead_error(self, ctx, error):
